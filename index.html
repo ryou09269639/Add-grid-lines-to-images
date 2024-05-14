@@ -1,48 +1,85 @@
 <!DOCTYPE html>
 <html lang="ja">
-
-  <head>
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>画像にグリッド線を追加</title>
     <style>
-      #canvas-container {
-        position: relative;
-        display: inline-block;
-      }
-
-      #grid-canvas {
-        position: absolute;
-        top: 0;
-        left: 0;
-        pointer-events: none;
-        /* 画像のインタラクションを保持 */
-      }
-
-      img {
-        display: block;
-      }
-
+        #canvas-container {
+            position: relative;
+            display: inline-block;
+        }
+        #grid-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            pointer-events: none; /* 画像のインタラクションを保持 */
+        }
+        img {
+            display: block;
+        }
     </style>
-  </head>
-
-  <body>
-    <h1>画像にグリッド線を追加</h1> <input type="file" id="image-upload" accept="image/*"><br> 行数（縦）: <input type="number" id="rows" min="1" value="5"><br> 列数（横）: <input type="number" id="cols" min="1" value="5"><br> <button onclick="drawGrid()">グリッドを描く(reload)</button>
-    <div id="canvas-container"> <img id="image" style="display: none;"> <canvas id="grid-canvas"></canvas> </div>
+</head>
+<body>
+    <h1>画像にグリッド線を追加</h1>
+    <input type="file" id="image-upload" accept="image/*"><br>
+    行数: <input type="number" id="rows" min="1" value="5"><br>
+    列数: <input type="number" id="cols" min="1" value="5"><br>
+    <button onclick="drawGrid()">グリッドを描く</button>
+    <div id="canvas-container">
+        <img id="image" style="display: none;">
+        <canvas id="grid-canvas"></canvas>
+    </div>
+    
     <script>
-      const imageUpload = document.getElementById('image-upload');
-      const image = document.getElementById('image');
-      const gridCanvas = document.getElementById('grid-canvas');
-      const canvasContainer = document.getElementById('canvas-container');
-      imageUpload.addEventListener('change', function(event) {
+        const imageUpload = document.getElementById('image-upload');
+        const image = document.getElementById('image');
+        const gridCanvas = document.getElementById('grid-canvas');
+        const canvasContainer = document.getElementById('canvas-container');
+
+        imageUpload.addEventListener('change', function(event) {
             const file = event.target.files[0];
             const reader = new FileReader();
             reader.onload = function(e) {
                 image.src = e.target.result;
                 image.style.display = 'block';
-                image.onload = function() { // キャンバスのサイズを画像のサイズに合わせる                    gridCanvas.width = image.width;                    gridCanvas.height = image.height;                    // グリッド線を引く                    drawGrid();                }            }            reader.readAsDataURL(file);        });        function drawGrid() {            const rows = parseInt(document.getElementById('rows').value);            const cols = parseInt(document.getElementById('cols').value);            const ctx = gridCanvas.getContext('2d');            ctx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);            const rowHeight = gridCanvas.height / rows;            const colWidth = gridCanvas.width / cols;            ctx.strokeStyle = 'red';            ctx.lineWidth = 1;            for (let i = 1; i < rows; i++) {                ctx.beginPath();                ctx.moveTo(0, i * rowHeight);                ctx.lineTo(gridCanvas.width, i * rowHeight);                ctx.stroke();            }            for (let j = 1; j < cols; j++) {                ctx.beginPath();                ctx.moveTo(j * colWidth, 0);                ctx.lineTo(j * colWidth, gridCanvas.height);                ctx.stroke();            }        }    
+                image.onload = function() {
+                    // キャンバスのサイズを画像のサイズに合わせる
+                    gridCanvas.width = image.width;
+                    gridCanvas.height = image.height;
+                    // グリッド線を引く
+                    drawGrid();
+                }
+            }
+            reader.readAsDataURL(file);
+        });
 
+        function drawGrid() {
+            const rows = parseInt(document.getElementById('rows').value);
+            const cols = parseInt(document.getElementById('cols').value);
+            const ctx = gridCanvas.getContext('2d');
+            ctx.clearRect(0, 0, gridCanvas.width, gridCanvas.height);
+
+            const rowHeight = gridCanvas.height / rows;
+            const colWidth = gridCanvas.width / cols;
+
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 1;
+
+            for (let i = 1; i < rows; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * rowHeight);
+                ctx.lineTo(gridCanvas.width, i * rowHeight);
+                ctx.stroke();
+            }
+
+            for (let j = 1; j < cols; j++) {
+                ctx.beginPath();
+                ctx.moveTo(j * colWidth, 0);
+                ctx.lineTo(j * colWidth, gridCanvas.height);
+                ctx.stroke();
+            }
+        }
     </script>
-  </body>
-
+</body>
 </html>
