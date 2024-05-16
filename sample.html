@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画像にグリッド線を追加</title>
+    <style>
+        body {
+            font-family: 'Helvetica', sans-serif;
+            background-color: #f8f8f8;
+            margin: 0;
+            padding: 0;
+        }
+
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            background-color: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 800px; /* より大きな画像に対応するために幅を広げる */
+        }
+
+        h1 {
+            color: #333;
+        }
+
+        form {
+            width: 100%;
+            max-width: 400px;
+        }
+
+        input[type="file"],
+        input[type="number"],
+        input[type="color"],
+        select,
+        button,
+        #share-link {
+            margin: 10px 0;
+            width: 100%;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+        }
+
+        input[type="file"] {
+            cursor: pointer;
+        }
+
+        button {
+            background-color: #FF6B6B;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        button:hover {
+            background-color: #FF4F4F;
+        }
+
+        #reset-btn,
+        #download-btn,
+        #share-btn {
+            margin-right: 10px;
+        }
+
+        #share-link {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            background-color: #f8f8f8;
+            font-size: 14px;
+            color: #555;
+        }
+
+        #canvas-container {
+            position: relative;
+            display: inline-block;
+            margin: 20px 0;
+            border-radius: 16px;
+            overflow: hidden;
+            max-width: calc(100vw - 40px); /* 画面の幅から左右の余白を除いたもの */
+            max-height: calc(100vh - 250px); /* 画面の高さから上下の余白とフォームの高さを除いたもの */
+        }
+
+        canvas {
+            display: block;
+            max-width: 100%; /* キャンバスの幅を親要素に合わせる */
+            max-height: 100%; /* キャンバスの高さを親要素に合わせる */
+            width: auto;
+            height: auto;
+            border: 1px solid #ddd;
+            border-radius: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>画像にグリッド線を追加</h1>
+        <form>
+            <input type="file" id="image-upload" accept="image/*"><br>
+            行数: <input type="number" id="rows" min="1" value="5"><br>
+            列数: <input type="number" id="cols" min="1" value="5"><br>
+            線の色: <input type="color" id="grid-color" value="#FF0000"><br>
+            線の太さ: <input type="number" id="grid-width" min="1" value="1"><br>
+            グリッドスタイル: 
+            <select id="grid-style">
+                <option value="solid">実線</option>
+                <option value="dashed">破線</option>
+                <option value="dotted">点線</option>
+            </select><br>
+            <button type="button" onclick="drawGrid()">グリッドを描く</button>
+            <button type="button" id="reset-btn">リセット</button>
+            <button type="button" id="download-btn">ダウンロード</button>
+            <button type="button" id="share-btn">共有</button>
+            <input type="text" id="share-link" readonly>
+        </form>
+        <div id="canvas-container">
+            <canvas id="main-canvas"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const imageUpload = document.getElementById('image-upload');
+        const mainCanvas = document.getElementById('main-canvas');
+        const ctx = mainCanvas.getContext('2d');
+        let image = new Image();
+    
+        imageUpload.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const arrayBuffer = e.target.result;
+                const blob = new Blob([arrayBuffer]);
+                const url = URL.createObjectURL(blob);
+    
+                image.src = url;
+            };
+            reader.readAsArrayBuffer(file);
+        });
+    
+        function resizeCanvas() {
+            const containerWidth = document.getElementById('canvas-container').clientWidth;
+            const aspectRatio = image.width / image.height;
+    
+            mainCanvas.width = containerWidth;
+            mainCanvas.height = containerWidth / aspectRatio;
+    
+            if (mainCanvas.height > window.innerHeight) {
+                mainCanvas.height = window.innerHeight - 40; // padding and margins
+                mainCanvas.width = mainCanvas.height * aspectRatio;
+            }
+        }
+    
+        function drawGrid() {
+            const rows = parseInt(document.getElementById('rows').value);
+            const cols = parseInt(document.getElementById('cols').value);
+            const color = document.getElementById('grid-color').value;
+            const width = parseInt(document.getElementById('grid-width').value);
+            const style = document.getElementById('grid-style').value;
+            const rowHeight = mainCanvas.height / rows;
+            const colWidth = mainCanvas.width / cols;
+    
+            // Clear the canvas
+            ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+    
+            // Draw the image
+            ctx.drawImage(image, 0, 0, mainCanvas.width, mainCanvas.height);
+    
+            // Draw the grid
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+    
+            if (style === 'dashed') {
+                ctx.setLineDash([5, 5]);
+            } else if (style === 'dotted') {
+                ctx.setLineDash([1, 2]);
+            } else {
+                ctx.setLineDash([]);
+            }
+    
+            for (let i = 1; i < rows; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * rowHeight);
+                ctx.lineTo(mainCanvas.width, i * rowHeight);
+                ctx.stroke();
+            }
+    
+            for (let j = 1; j < cols; j++) {
+                ctx.beginPath();
+                ctx.moveTo(j * colWidth, 0);
+                ctx.lineTo(j * colWidth, mainCanvas.height);
+                ctx.stroke();
+            }
+        }
+    
+        document.getElementById('download-btn').addEventListener('click', function() {
+            const link = document.createElement('a');
+            link.href = mainCanvas.toDataURL('image/png');
+            link.download = 'grid-image.png';
+            link.click();
+        });
+    
+        document.getElementById('share-btn').addEventListener('click', function() {
+            const dataUrl = mainCanvas.toDataURL('image/png');
+            const blob = dataURLToBlob(dataUrl);
+            const formData = new FormData();
+            formData.append('file', blob, 'grid-image.png');
+    
+            fetch('https://file.io', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const shareLink = document.getElementById('share-link');
+                shareLink.value = data.link;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+    
+        function dataURLToBlob(dataURL) {
+            const parts = dataURL.split(';base64,');
+            const contentType = parts[0].split(':')[1];
+            const raw = window.atob(parts[1]);
+            const rawLength = raw.length;
+            const uInt8Array = new Uint8Array(rawLength);
+    
+            for (let i = 0; i < rawLength; ++i) {
+                uInt8Array[i] = raw.charCodeAt(i);
+            }
+    
+            return new Blob([uInt8Array], { type: contentType });
+        }
+    
+        document.getElementById('reset-btn').addEventListener('click', function() {
+            imageUpload.value = "";
+            ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+            mainCanvas.width = 0;
+            mainCanvas.height = 0;
+        });
+    
+        window.addEventListener('resize', () => {
+            if (image.src) {
+                resizeCanvas();
+                drawGrid();
+            }
+        });
+    </script>
+    
+</body>
+</html>
