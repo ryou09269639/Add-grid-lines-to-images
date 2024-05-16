@@ -1,0 +1,94 @@
+body {
+    font-family: 'Helvetica', sans-serif;
+    background-color: #f8f8f8;
+    margin: 0;
+    padding: 0;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background-color: #fff;
+    border-radius: 16px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 20px auto;
+    max-width: 800px; /* より大きな画像に対応するために幅を広げる */
+}
+
+h1 {
+    color: #333;
+}
+
+form {
+    width: 100%;
+    max-width: 400px;
+}
+
+input[type="file"],
+input[type="number"],
+input[type="color"],
+select,
+button,
+#share-link {
+    margin: 10px 0;
+    padding: 12px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    width: auto; /* 変更 */
+    display: inline-block; /* 追加 */
+}
+
+input[type="file"] {
+    cursor: pointer;
+}
+
+button {
+    background-color: #FF6B6B;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    display: inline-block; /* 追加 */
+}
+
+button:hover {
+    background-color: #FF4F4F;
+}
+
+#reset-btn,
+#download-btn,
+#share-btn {
+    margin-right: 10px;
+}
+
+#share-link {
+    margin-top: 10px;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    background-color: #f8f8f8;
+    font-size: 14px;
+    color: #555;
+}
+
+#canvas-container {
+    position: relative;
+    display: inline-block;
+    margin: 20px 0;
+    border-radius: 16px;
+    overflow: hidden;
+    max-width: 100%; /* キャンバスの幅を最大限のサイズに拡大 */
+    max-height: calc(100vh - 100px); /* 画面の高さからフォーム等の高さを除いたものを設定 */
+}
+
+canvas {
+    display: block;
+    max-width: 100%; /* キャンバスの幅を親要素に合わせる */
+    max-height: calc(100vh - 100px); /* キャンバスの高さを親要素に合わせる */
+    width: auto;
+    height: auto;
+    border: 1px solid #ddd;
+    border-radius: 16px;
+}
