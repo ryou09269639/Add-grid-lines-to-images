@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="sample.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>画像にグリッド線を追加</title>
+    <style>
+        #canvas-container {
+            position: relative;
+            display: inline-block;
+        }
+        #main-canvas {
+            position: relative;
+            display: block;
+        }
+        button {
+            background-color: #FF6B6B;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            display: inline-block;
+        }
+
+        @keyframes buttonScale {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+
+        .animate {
+            animation: buttonScale 0.3s;
+        }
+
+        button:hover {
+            background-color: #FF4F4F;
+        }
+    </style>
+</head>
+<body>
+    <h1>画像にグリッド線を追加</h1>
+    <input type="file" id="image-upload" accept="image/*">
+    <button id="reset-btn">リセット</button><br>
+    行数: <input type="number" id="rows" min="1" value="5"><br>
+    列数: <input type="number" id="cols" min="1" value="5"><br>
+    <br> <!-- [br]は改行タグやでｗｗｗ -->
+    線の色: <input type="color" id="grid-color" value="#FF0000"><br>
+    線の太さ: <input type="number" id="grid-width" min="1" value="1"><br>
+    グリッドスタイル: 
+    <select id="grid-style">
+        <option value="solid">実線</option>
+        <option value="dashed">破線</option>
+        <option value="dotted">点線</option>
+    </select><br>
+    <button onclick="drawGrid()">グリッドを描く</button>
+    <div id="canvas-container">
+        <canvas id="main-canvas"></canvas>
+    </div>
+    <br>
+    <br>
+    <button id="download-btn">ダウンロード</button>
+    <button id="share-btn">共有</button>
+    <input type="text" id="share-link" readonly>
+
+    
+
+    <script>
+        const imageUpload = document.getElementById('image-upload');
+        const mainCanvas = document.getElementById('main-canvas');
+        const ctx = mainCanvas.getContext('2d');
+        let image = new Image();
+
+        imageUpload.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                image.src = e.target.result;
+                image.onload = function() {
+                    mainCanvas.width = image.width;
+                    mainCanvas.height = image.height;
+                    drawGrid();  // Draw the image and grid together
+                }
+            }
+            reader.readAsDataURL(file);
+        });
+
+        function drawGrid() {
+            const rows = parseInt(document.getElementById('rows').value);
+            const cols = parseInt(document.getElementById('cols').value);
+            const rowHeight = mainCanvas.height / rows;
+            const colWidth = mainCanvas.width / cols;
+
+            // Clear the canvas
+            ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+
+            // Draw the image
+            ctx.drawImage(image, 0, 0);
+
+            // Draw the grid
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 1;
+
+            for (let i = 1; i < rows; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * rowHeight);
+                ctx.lineTo(mainCanvas.width, i * rowHeight);
+                ctx.stroke();
+            }
+
+            for (let j = 1; j < cols; j++) {
+                ctx.beginPath();
+                ctx.moveTo(j * colWidth, 0);
+                ctx.lineTo(j * colWidth, mainCanvas.height);
+                ctx.stroke();
+            }
+        }
+
+        document.getElementById('download-btn').addEventListener('click', function() {
+            const link = document.createElement('a');
+            link.href = mainCanvas.toDataURL('image/png');
+            link.download = 'grid-image.png';
+            link.click();
+        });
+
+        document.getElementById('share-btn').addEventListener('click', function() {
+            const dataUrl = mainCanvas.toDataURL('image/png');
+            const blob = dataURLToBlob(dataUrl);
+            const formData = new FormData();
+            formData.append('file', blob, 'grid-image.png');
+
+            fetch('https://file.io', { // ファイルをアップロードする共有サービスのURL
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const shareLink = document.getElementById('share-link');
+                shareLink.value = data.link;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        });
+
+        function dataURLToBlob(dataURL) {
+            const parts = dataURL.split(';base64,');
+            const contentType = parts[0].split(':')[1];
+            const raw = window.atob(parts[1]);
+            const rawLength = raw.length;
+            const uInt8Array = new Uint8Array(rawLength);
+
+            for (let i = 0; i < rawLength; ++i) {
+                uInt8Array[i] = raw.charCodeAt(i);
+            }
+
+            return new Blob([uInt8Array], { type: contentType });
+        }
+        function drawGrid() {
+            const rows = parseInt(document.getElementById('rows').value);
+            const cols = parseInt(document.getElementById('cols').value);
+            const color = document.getElementById('grid-color').value;
+            const width = parseInt(document.getElementById('grid-width').value);
+            const rowHeight = mainCanvas.height / rows;
+            const colWidth = mainCanvas.width / cols;
+        
+            // Clear the canvas
+            ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+        
+            // Draw the image
+            ctx.drawImage(image, 0, 0);
+        
+            // Draw the grid
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+        
+            for (let i = 1; i < rows; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * rowHeight);
+                ctx.lineTo(mainCanvas.width, i * rowHeight);
+                ctx.stroke();
+            }
+        
+            for (let j = 1; j < cols; j++) {
+                ctx.beginPath();
+                ctx.moveTo(j * colWidth, 0);
+                ctx.lineTo(j * colWidth, mainCanvas.height);
+                ctx.stroke();
+            }
+        }
+        function drawGrid() {
+            const rows = parseInt(document.getElementById('rows').value);
+            const cols = parseInt(document.getElementById('cols').value);
+            const color = document.getElementById('grid-color').value;
+            const width = parseInt(document.getElementById('grid-width').value);
+            const style = document.getElementById('grid-style').value;
+            const rowHeight = mainCanvas.height / rows;
+            const colWidth = mainCanvas.width / cols;
+        
+            // Clear the canvas
+            ctx.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
+        
+            // Draw the image
+            ctx.drawImage(image, 0, 0);
+        
+            // Draw the grid
+            ctx.strokeStyle = color;
+            ctx.lineWidth = width;
+        
+            if (style === 'dashed') {
+                ctx.setLineDash([5, 5]);
+            } else if (style === 'dotted') {
+                ctx.setLineDash([1, 2]);
+            } else {
+                ctx.setLineDash([]);
+            }
+        
+            for (let i = 1; i < rows; i++) {
+                ctx.beginPath();
+                ctx.moveTo(0, i * rowHeight);
+                ctx.lineTo(mainCanvas.width, i * rowHeight);
+                ctx.stroke();
+            }
+        
+            for (let j = 1; j < cols; j++) {
+                ctx.beginPath();
+                ctx.moveTo(j * colWidth, 0);
+                ctx.lineTo(j * colWidth, mainCanvas.height);
+                ctx.stroke();
+            }
+        }
+        
+    </script>
+</body>
+</html>
